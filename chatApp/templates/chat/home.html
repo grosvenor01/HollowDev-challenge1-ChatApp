@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .container {
+      max-width: 800px;
+      margin-top: 50px;
+    }
+
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      background-color: #4CAF50;
+      color: #fff;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .list-group-item {
+      background-color: #fff;
+      border: none;
+      padding: 12px 20px;
+    }
+
+    .list-group-item a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .list-group-item a:hover {
+      color: #45a049;
+    }
+
+    .form-control {
+      border-radius: 5px;
+    }
+
+    .btn-primary {
+      background-color: #4CAF50;
+      border-color: #4CAF50;
+    }
+
+    .btn-primary:hover {
+      background-color: #45a049;
+      border-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="mb-0">Your Rooms</h2>
+          </div>
+          <ul class="list-group list-group-flush">
+            {% for room in rooms %}
+            <li class="list-group-item">
+              <a href="/chat/{{room.room_name}}">{{ room.room_name }}</a>
+            </li>
+            {% empty %}
+            <li class="list-group-item">You are not a member of any rooms yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="mb-0">Join a Room</h2>
+          </div>
+          <div class="card-body">
+            <form method="post" action="/home/">
+              {% csrf_token %}
+              <div class="form-group">
+                <input type="text" class="form-control" name="room_name" placeholder="Room name" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Join</button>
+            </form>
+          </div>
+        </div>
+        <div class="card mt-4">
+          <div class="card-header">
+            <h2 class="mb-0">Profile</h2>
+          </div>
+          <div class="card-body">
+            <a href="/profile/{{user.username}}" class="btn btn-primary">Go to Profile</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hollow Chat app </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message.sent {
+            background-color: #dcf8c6;
+            text-align: right;
+        }
+
+        .message.received {
+            background-color: #f1f1f1;
+            text-align: left;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .input-container {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .home-button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .home-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Hollow Chat app</h1>
+        <div class="chat-container" id="message">
+            {% for msg in messages %}
+            {% if msg.sender.username == user.get_username %}
+            <div class="message sent">
+                <div class="message-sender">{{ msg.sender }}</div>
+                <div>{{ msg.message }}</div>
+            </div>
+            {%else%}
+            <div class="message received">
+                <div class="message-sender">{{ msg.sender }}</div>
+                <div>{{ msg.message }}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="input-container">
+
+            <input type="text" placeholder="Type your message..." name="message" id="message-input">
+            <button id="send-button">Send</button>
+        </div>
+
+        <div class="home-button-container">
+            <a href="{% url 'home' %}">
+                <button class="home-button">Go Back Home</button>
+            </a>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        let sender;
+        let room = '{{ room }}'
+        let url = `ws://${window.location.host}/ws/socket-server/${room}/`;
+        const chatSocket = new WebSocket(url);
+
+
+
+        chatSocket.onmessage = function (e) {
+            let data = JSON.parse(e.data);
+            if (data.type === "chat") {
+                if (data.sender !== sender) {
+                    let messageContainer = document.getElementById("message");
+                    let messageElement = document.createElement("div");
+                    messageElement.classList.add("message", "received");
+
+                    let senderElement = document.createElement("div");
+                    senderElement.classList.add("message-sender");
+                    senderElement.textContent = data.sender;
+
+                    let messageTextElement = document.createElement("div");
+                    messageTextElement.textContent = data.message;
+
+                    messageElement.appendChild(senderElement);
+                    messageElement.appendChild(messageTextElement);
+                    messageContainer.appendChild(messageElement);
+                    messageContainer.scrollTop = messageContainer.scrollHeight;
+                    console.log("data : ", data);
+                }
+            }
+            else {
+                sender = data.sender;
+                console.log("data : ", data);
+            }
+        };
+
+        let messageInput = document.getElementById('message-input');
+        let sendButton = document.getElementById('send-button');
+
+        sendButton.addEventListener('click', (e) => {
+            let message = messageInput.value.trim();
+            if (message) {
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'sender': sender
+                }));
+                let messageContainer = document.getElementById("message");
+                let messageElement = document.createElement("div");
+                messageElement.classList.add("message", "sent");
+
+                let senderElement = document.createElement("div");
+                senderElement.classList.add("message-sender");
+                senderElement.textContent = sender;
+
+                let messageTextElement = document.createElement("div");
+                messageTextElement.textContent = message;
+
+                messageElement.appendChild(senderElement);
+                messageElement.appendChild(messageTextElement);
+                messageContainer.appendChild(messageElement);
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+                messageInput.value = "";
+            }
+        });
+
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
+</body>
+
+</html>
