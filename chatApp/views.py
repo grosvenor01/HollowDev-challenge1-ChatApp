@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import *
 from .schema import schema
+import re
 # Create your views here.
 def lobby(request):
     return render(request , 'chat/main.html')
@@ -16,8 +17,9 @@ def register(request):
             username=request.POST.get("username")
             Email = request.POST.get("email")
             password = request.POST.get("password")
-            print(Email , password)
-            #error handeling 
+            # 3jazt nkhmam f regex tbh 
+            if len(password)<8:
+                return render(request, "chat/register.html",context={"Error":"password should be minimum 8 carecters"})
             user = User.objects.create_user(username=username , password=password , email = Email)
             user.save()
             return render(request, "chat/login.html")
